@@ -1,0 +1,15 @@
+export const AI_USER = {
+  _id: "ai_user",
+  id: "ai_user",
+  name: "Sphere AI",
+  email: "ai@sphere.com",
+  isAI: true,
+  bio: "Your intelligent AI assistant for smart conversations.",
+  status: "online",
+  avatar: "/ai-logo.png",
+  profilePic: "/ai-logo.png",
+  type: "ai",
+  isGroup: false,
+  chatKey: "ai:assistant",
+  forceOnline: true,
+};
