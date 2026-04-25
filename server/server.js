@@ -34,39 +34,17 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
-//changes here for corss
-// const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-//   .split(",")
-//   .map((origin) => origin.trim());
 
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   })
-// );
-
-//new cors code:
-
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://sphereai-chatapp.vercel.app"
-];
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173" )
+  .split(",")
+  .map((origin) => origin.trim());
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
   })
 );
-
-app.options("*", cors());
 
 
 app.use(express.json());
