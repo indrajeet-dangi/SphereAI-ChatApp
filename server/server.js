@@ -35,16 +35,18 @@ const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173" || "sphere-ai-chat-app.vercel.app" )
-  .split(",")
-  .map((origin) => origin.trim());
+// const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173" || "sphere-ai-chat-app.vercel.app" )
+//   .split(",")
+//   .map((origin) => origin.trim());
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin:process.env.CLIENT_URL ,
     credentials: true,
   })
 );
+
+app.options("/*", cors());
 
 
 app.use(express.json());
