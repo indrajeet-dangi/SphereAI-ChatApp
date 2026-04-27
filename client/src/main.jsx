@@ -17,7 +17,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         domain={auth0Domain}
         clientId={auth0ClientId}
         authorizationParams={{
-          redirect_uri: `${window.location.origin}/dashboard`,
+          redirect_uri: window.location.origin,
         }}
       >
         <UserProvider>
