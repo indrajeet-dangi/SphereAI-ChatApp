@@ -34,14 +34,24 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
-
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")
-  .map((origin) => origin.trim());
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/+$/, ""));
+
+const isOriginAllowed = (origin = "") => {
+  if (!origin) return true;
+  const normalized = String(origin).replace(/\/+$/, "");
+  return allowedOrigins.includes(normalized);
+};
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -84,8 +94,12 @@ const startServer = async () => {
 
     const io = new Server(httpServer, {
       cors: {
-        origin: allowedOrigins,
+        origin: (origin, callback) => {
+          if (isOriginAllowed(origin)) return callback(null, true);
+          return callback(new Error("Not allowed by CORS"));
+        },
         methods: ["GET", "POST"],
+        credentials: true,
       },
     });
 
