@@ -1,17 +1,19 @@
 import { io } from "socket.io-client";
 
 let socket;
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const SOCKET_URL = String(import.meta.env.VITE_API_URL || "")
+  .trim()
+  .replace(/\/+$/, "")
+  .replace(/\/api$/i, "");
 
 export const connectSocket = () => {
   const token = localStorage.getItem("token");
-  if (!token) {
+  if (!token || !SOCKET_URL) {
     return null;
   }
 
   const shouldCreate =
     !socket ||
-    !socket.connected ||
     String(socket.auth?.token || "") !== String(token);
 
   if (shouldCreate) {
@@ -19,7 +21,7 @@ export const connectSocket = () => {
       socket.disconnect();
     }
     socket = io(SOCKET_URL, {
-      transports: ["websocket", "polling"],
+      transports: ["websocket"],
       withCredentials: true,
       autoConnect: false,
       auth: {

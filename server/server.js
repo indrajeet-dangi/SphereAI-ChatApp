@@ -34,11 +34,18 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean)
-  .map((origin) => origin.replace(/\/+$/, ""));
+const allowedOrigins = Array.from(
+  new Set(
+    [
+      "http://localhost:5173",
+      "https://sphere-ai-chat-app.vercel.app",
+      ...(process.env.CLIENT_URL || "").split(","),
+    ]
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+      .map((origin) => origin.replace(/\/+$/, ""))
+  )
+);
 
 const isOriginAllowed = (origin = "") => {
   if (!origin) return true;
@@ -131,22 +138,37 @@ const startServer = async () => {
     setSocketServer(io);
 
     io.on("connection", (socket) => {
+      const emitOnlineUsers = () => {
+        const users = getOnlineUserIds();
+        io.emit("onlineUsers", users);
+        io.emit("online users", users);
+      };
+
       socket.join(String(socket.userId));
       setUserSocket(String(socket.userId), socket.id);
-      io.emit("onlineUsers", getOnlineUserIds());
+      emitOnlineUsers();
+
+      socket.on("setup", (userData) => {
+        const userId = String(userData?._id || socket.userId || "");
+        if (!userId) return;
+        socket.join(userId);
+        setUserSocket(userId, socket.id);
+        socket.emit("connected");
+        emitOnlineUsers();
+      });
 
       socket.on("join", () => {
         if (!socket.userId) return;
         socket.join(String(socket.userId));
         setUserSocket(String(socket.userId), socket.id);
-        io.emit("onlineUsers", getOnlineUserIds());
+        emitOnlineUsers();
       });
 
       socket.on("userOnline", () => {
         if (!socket.userId) return;
         socket.join(String(socket.userId));
         setUserSocket(String(socket.userId), socket.id);
-        io.emit("onlineUsers", getOnlineUserIds());
+        emitOnlineUsers();
       });
 
       socket.on("joinChat", ({ chatId }) => {
@@ -211,6 +233,7 @@ const startServer = async () => {
               const memberSocketId = getUserSocket(memberKey);
               if (memberSocketId && memberKey !== String(senderId)) {
                 io.to(memberSocketId).emit("receiveMessage", message);
+                io.to(memberSocketId).emit("message received", message);
               }
             });
           } else {
@@ -260,6 +283,7 @@ const startServer = async () => {
                 receiverMessage.text = receiverMessage.translatedText;
               }
               io.to(receiverSocketId).emit("receiveMessage", receiverMessage);
+              io.to(receiverSocketId).emit("message received", receiverMessage);
 
               socket.emit("messageDelivered", {
                 messageId: String(message._id),
@@ -286,7 +310,7 @@ const startServer = async () => {
       socket.on("disconnect", () => {
         if (socket.userId) {
           removeUserSocket(socket.userId);
-          io.emit("onlineUsers", getOnlineUserIds());
+          emitOnlineUsers();
         }
       });
     });

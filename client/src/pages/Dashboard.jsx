@@ -528,6 +528,7 @@ const Dashboard = () => {
     const socket = connectSocket();
     if (!socket) return;
 
+    socket.emit("setup", currentUser);
     socket.emit("join");
 
     const onOnlineUsers = (ids) => {
@@ -722,7 +723,9 @@ const Dashboard = () => {
     };
 
     socket.on("onlineUsers", onOnlineUsers);
+    socket.on("online users", onOnlineUsers);
     socket.on("receiveMessage", onReceiveMessage);
+    socket.on("message received", onReceiveMessage);
     socket.on("messageSent", onMessageSent);
     socket.on("messageError", onMessageError);
     socket.on("messageDeleted", onMessageDeleted);
@@ -740,7 +743,9 @@ const Dashboard = () => {
 
     return () => {
       socket.off("onlineUsers", onOnlineUsers);
+      socket.off("online users", onOnlineUsers);
       socket.off("receiveMessage", onReceiveMessage);
+      socket.off("message received", onReceiveMessage);
       socket.off("messageSent", onMessageSent);
       socket.off("messageError", onMessageError);
       socket.off("messageDeleted", onMessageDeleted);
