@@ -42,6 +42,12 @@ const Login = () => {
   };
 
   useEffect(() => {
+    if (!auth0Loading && isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, auth0Loading, navigate]);
+
+  useEffect(() => {
     const syncAuth0UserWithBackend = async () => {
       if (!isAuthenticated || !user) return;
 
@@ -71,7 +77,7 @@ const Login = () => {
         if (data.user) {
           setCurrentUser({ ...data.user, language: normalizeLanguage(data.user.language) });
         }
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       } catch (err) {
         setError(err.response?.data?.message || t(uiLang, "googleLoginFailed"));
       } finally {
@@ -87,6 +93,7 @@ const Login = () => {
     setGoogleLoading(true);
     try {
       await loginWithRedirect({
+        appState: { returnTo: "/dashboard" },
         authorizationParams: {
           connection: "google-oauth2",
         },
@@ -98,6 +105,14 @@ const Login = () => {
   };
 
   const uiLang = normalizeLanguage(currentUser?.language);
+
+  if (auth0Loading) {
+    return (
+      <AuthShell title={t(uiLang, "welcomeBack")} subtitle={t(uiLang, "loginSubtitle")}>
+        <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-300">Loading...</div>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell title={t(uiLang, "welcomeBack")} subtitle={t(uiLang, "loginSubtitle")}>
