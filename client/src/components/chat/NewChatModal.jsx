@@ -20,19 +20,13 @@ const NewChatModal = ({
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const searchInputRef = useRef(null);
+  const previewUrlRef = useRef("");
 
   useEffect(() => {
-    if (open) {
-      setSearchTerm("");
-      setCreatingGroup(false);
-      setGroupName("");
-      setGroupImageFile(null);
-      setGroupImagePreview("");
-      setSelectedMemberIds([]);
-      setTimeout(() => searchInputRef.current?.focus(), 0);
-    } else {
-      if (groupImagePreview) {
-        URL.revokeObjectURL(groupImagePreview);
+    if (!open) {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = "";
       }
       setSearchTerm("");
       setCreatingGroup(false);
@@ -40,16 +34,26 @@ const NewChatModal = ({
       setGroupImageFile(null);
       setGroupImagePreview("");
       setSelectedMemberIds([]);
+      return;
     }
-  }, [open, groupImagePreview]);
+
+    setSearchTerm("");
+    setCreatingGroup(false);
+    setGroupName("");
+    setGroupImageFile(null);
+    setGroupImagePreview("");
+    setSelectedMemberIds([]);
+    setTimeout(() => searchInputRef.current?.focus(), 0);
+  }, [open]);
 
   useEffect(() => {
     return () => {
-      if (groupImagePreview) {
-        URL.revokeObjectURL(groupImagePreview);
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = "";
       }
     };
-  }, [groupImagePreview]);
+  }, []);
 
   const filteredUsers = useMemo(
     () =>
@@ -114,12 +118,14 @@ const NewChatModal = ({
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
 
-    if (groupImagePreview) {
-      URL.revokeObjectURL(groupImagePreview);
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
     }
 
+    const nextPreview = URL.createObjectURL(file);
+    previewUrlRef.current = nextPreview;
     setGroupImageFile(file);
-    setGroupImagePreview(URL.createObjectURL(file));
+    setGroupImagePreview(nextPreview);
   };
 
   if (!open) return null;
