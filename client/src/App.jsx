@@ -11,7 +11,8 @@ function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth0();
   const token = localStorage.getItem("token");
-  const isSignedIn = Boolean(token || isAuthenticated);
+  const isSignedIn = Boolean(token);
+  const isAuthSyncPending = Boolean(!token && isAuthenticated && !isLoading);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -35,7 +36,15 @@ function App() {
       <Route path="/" element={<Navigate to={isSignedIn ? "/dashboard" : "/login"} replace />} />
       <Route
         path="/login"
-        element={isLoading ? <div className="p-6 text-center text-slate-600">Loading...</div> : (isSignedIn ? <Navigate to="/dashboard" replace /> : <Login />)}
+        element={
+          isLoading || isAuthSyncPending ? (
+            <div className="p-6 text-center text-slate-600">Loading...</div>
+          ) : isSignedIn ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Login />
+          )
+        }
       />
       <Route path="/register" element={<Register />} />
       <Route

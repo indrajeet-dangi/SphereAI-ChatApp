@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Lock, Mail } from "lucide-react";
 import AuthShell from "../components/AuthShell";
-import { auth0LoginUser, loginUser } from "../services/api";
+import { loginUser } from "../services/api";
 import { normalizeLanguage } from "../constants/languages";
 import { useUserContext } from "../context/UserContext";
 import { t } from "../i18n";
@@ -11,7 +11,7 @@ import { t } from "../i18n";
 const Login = () => {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useUserContext();
-  const { loginWithRedirect, user, isAuthenticated, isLoading: auth0Loading, getAccessTokenSilently } = useAuth0();
+  const { loginWithRedirect, isAuthenticated, isLoading: auth0Loading } = useAuth0();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -47,47 +47,6 @@ const Login = () => {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, auth0Loading, navigate]);
-
-  useEffect(() => {
-    const syncAuth0UserWithBackend = async () => {
-      if (!isAuthenticated || !user) return;
-
-      setGoogleLoading(true);
-      setError("");
-
-      try {
-        let auth0Token = "";
-        try {
-          auth0Token = await getAccessTokenSilently();
-        } catch (tokenError) {
-          auth0Token = "";
-        }
-
-        if (auth0Token) {
-          localStorage.setItem("auth0_access_token", auth0Token);
-        }
-
-        const data = await auth0LoginUser({
-          name: user.name,
-          email: user.email,
-          picture: user.picture,
-          sub: user.sub,
-        });
-
-        localStorage.setItem("token", data.token);
-        if (data.user) {
-          setCurrentUser({ ...data.user, language: normalizeLanguage(data.user.language) });
-        }
-        navigate("/dashboard", { replace: true });
-      } catch (err) {
-        setError(err.response?.data?.message || t(uiLang, "googleLoginFailed"));
-      } finally {
-        setGoogleLoading(false);
-      }
-    };
-
-    syncAuth0UserWithBackend();
-  }, [isAuthenticated, user, getAccessTokenSilently, navigate, setCurrentUser]);
 
   const handleGoogleLogin = async () => {
     setError("");
