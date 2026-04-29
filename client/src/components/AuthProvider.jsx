@@ -3,11 +3,18 @@ import { useNavigate } from "react-router-dom";
 
 const auth0Domain = import.meta.env.VITE_AUTH0_DOMAIN;
 const auth0ClientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+const AUTH_DEBUG = String(import.meta.env.VITE_DEBUG_AUTH0 || "").toLowerCase() === "true";
 
 const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const onRedirectCallback = (appState) => {
+    if (AUTH_DEBUG) {
+      console.debug("[AuthProvider] onRedirectCallback", {
+        href: window.location.href,
+        returnTo: appState?.returnTo || "/dashboard",
+      });
+    }
     navigate(appState?.returnTo || "/dashboard", { replace: true });
   };
 
