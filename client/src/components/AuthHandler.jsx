@@ -19,7 +19,6 @@ const AuthHandler = ({ children }) => {
     const url = new URL(window.location.href);
     console.debug("[AuthHandler] redirect check", {
       href: window.location.href,
-      origin: window.location.origin,
       hasCode: url.searchParams.has("code"),
       hasState: url.searchParams.has("state"),
       isLoading,
