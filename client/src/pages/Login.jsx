@@ -45,6 +45,10 @@ const Login = () => {
 
   useEffect(() => {
     if (AUTH_DEBUG) {
+      console.log("Current URL:", window.location.href);
+      console.log("Origin:", window.location.origin);
+      console.log("isLoading:", auth0Loading);
+      console.log("isAuthenticated:", isAuthenticated);
       console.debug("[Login] auth state", {
         url: window.location.href,
         isAuthenticated,
@@ -53,8 +57,7 @@ const Login = () => {
       });
     }
 
-    const appToken = localStorage.getItem("token");
-    if (!auth0Loading && isAuthenticated && appToken) {
+    if (!auth0Loading && isAuthenticated) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, auth0Loading, navigate]);
