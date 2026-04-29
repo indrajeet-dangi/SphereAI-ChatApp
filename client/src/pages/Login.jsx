@@ -8,6 +8,8 @@ import { normalizeLanguage } from "../constants/languages";
 import { useUserContext } from "../context/UserContext";
 import { t } from "../i18n";
 
+const AUTH_DEBUG = String(import.meta.env.VITE_DEBUG_AUTH0 || "").toLowerCase() === "true";
+
 const Login = () => {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useUserContext();
@@ -42,11 +44,28 @@ const Login = () => {
   };
 
   useEffect(() => {
+    if (AUTH_DEBUG) {
+      console.debug("[Login] auth state", {
+        url: window.location.href,
+        isAuthenticated,
+        isLoading: auth0Loading,
+        hasAppToken: Boolean(localStorage.getItem("token")),
+      });
+    }
+
     const appToken = localStorage.getItem("token");
     if (!auth0Loading && isAuthenticated && appToken) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, auth0Loading, navigate]);
+
+  useEffect(() => {
+    const syncError = sessionStorage.getItem("auth_sync_error");
+    if (!syncError) return;
+    setError(syncError);
+    sessionStorage.removeItem("auth_sync_error");
+    setGoogleLoading(false);
+  }, []);
 
   const handleGoogleLogin = async () => {
     setError("");

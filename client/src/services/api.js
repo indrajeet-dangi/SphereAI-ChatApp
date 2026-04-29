@@ -23,7 +23,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = Number(error?.response?.status || 0);
-    if (status === 401) {
+    const url = String(error?.config?.url || "");
+    const isPublicAuthRoute =
+      url.includes("/api/auth/login") ||
+      url.includes("/api/auth/register") ||
+      url.includes("/api/auth/auth0-login") ||
+      url.includes("/api/auth/logout");
+
+    if (status === 401 && !isPublicAuthRoute) {
       localStorage.removeItem("token");
       localStorage.removeItem("currentUser");
       window.dispatchEvent(new CustomEvent("auth:unauthorized"));
