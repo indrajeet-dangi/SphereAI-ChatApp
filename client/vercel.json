@@ -1,5 +1,10 @@
 {
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*\\.(?:js|mjs|css|map|png|jpg|jpeg|gif|svg|webp|ico|json|txt|woff|woff2|ttf|eot))", "destination": "/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
