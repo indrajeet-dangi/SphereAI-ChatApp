@@ -11,7 +11,7 @@ function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth0();
   const token = localStorage.getItem("token");
-  const isSignedIn = Boolean(isAuthenticated || token);
+  const isSignedIn = Boolean(token);
   const isAuthSyncPending = Boolean(!token && isAuthenticated && !isLoading);
 
   useEffect(() => {
@@ -23,14 +23,13 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
     const onUnauthorized = () => {
-      if (isAuthenticated) return;
       navigate("/login", { replace: true });
     };
     window.addEventListener("auth:unauthorized", onUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", onUnauthorized);
-  }, [navigate, isAuthenticated]);
+  }, [navigate]);
 
   return (
     <Routes>
