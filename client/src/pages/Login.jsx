@@ -53,7 +53,8 @@ const Login = () => {
       });
     }
 
-    if (!auth0Loading && isAuthenticated) {
+    const appToken = localStorage.getItem("token");
+    if (!auth0Loading && isAuthenticated && appToken) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, auth0Loading, navigate]);

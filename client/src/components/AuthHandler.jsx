@@ -15,21 +15,18 @@ const AuthHandler = ({ children }) => {
   const syncInFlightRef = useRef(false);
 
   useEffect(() => {
-    if (!AUTH_DEBUG) return;
-    const url = new URL(window.location.href);
-    console.debug("[AuthHandler] redirect check", {
-      href: window.location.href,
-      hasCode: url.searchParams.has("code"),
-      hasState: url.searchParams.has("state"),
-      isLoading,
-      isAuthenticated,
-      hasUser: Boolean(user),
-      hasAppToken: Boolean(localStorage.getItem("token")),
-    });
-  }, [isLoading, isAuthenticated, user]);
-
-  useEffect(() => {
     const syncAuth0Session = async () => {
+      if (AUTH_DEBUG) {
+        // Debug-only callback trace for deployed auth flow.
+        console.debug("[AuthHandler] state", {
+          url: window.location.href,
+          isLoading,
+          isAuthenticated,
+          hasUser: Boolean(user),
+          hasAppToken: Boolean(localStorage.getItem("token")),
+        });
+      }
+
       if (isLoading || !isAuthenticated || !user) return;
       const existingToken = localStorage.getItem("token");
       if (existingToken) return;
@@ -80,6 +77,8 @@ const AuthHandler = ({ children }) => {
         if (AUTH_DEBUG) {
           console.debug("[AuthHandler] backend auth0-login failed");
         }
+        localStorage.removeItem("token");
+        localStorage.removeItem("currentUser");
         sessionStorage.setItem("auth_sync_error", "Unable to complete sign in. Please try again.");
         if (location.pathname !== "/login") {
           navigate("/login", { replace: true });

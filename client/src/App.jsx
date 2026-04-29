@@ -11,7 +11,8 @@ function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth0();
   const token = localStorage.getItem("token");
-  const isSignedIn = Boolean(isAuthenticated || token);
+  const isSignedIn = Boolean(token);
+  const isAuthSyncPending = Boolean(!token && isAuthenticated && !isLoading);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -24,12 +25,11 @@ function App() {
 
   useEffect(() => {
     const onUnauthorized = () => {
-      if (isAuthenticated) return;
       navigate("/login", { replace: true });
     };
     window.addEventListener("auth:unauthorized", onUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", onUnauthorized);
-  }, [navigate, isAuthenticated]);
+  }, [navigate]);
 
   return (
     <Routes>
@@ -37,7 +37,7 @@ function App() {
       <Route
         path="/login"
         element={
-          isLoading ? (
+          isLoading || isAuthSyncPending ? (
             <div className="p-6 text-center text-slate-600">Loading...</div>
           ) : isSignedIn ? (
             <Navigate to="/dashboard" replace />
